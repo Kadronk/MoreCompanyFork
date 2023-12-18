@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
-using GameNetcodeStuff;
 using HarmonyLib;
-using MoreCompany.Cosmetics;
-using MoreCompany.Utils;
-using Steamworks;
-using Steamworks.Data;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.Audio;
-using Logger = BepInEx.Logging.Logger;
-using Object = UnityEngine.Object;
+using GameNetcodeStuff;
+using Steamworks;
+using MoreCompany.Cosmetics;
+using MoreCompany.Utils;
 
 namespace MoreCompany
 {
@@ -84,8 +78,9 @@ namespace MoreCompany
             ReadCosmeticsFromFile();
             StaticLogger.LogInfo("Read settings and cosmetics");
 
-            AssetBundle bundle = BundleUtilities.LoadBundleFromInternalAssembly("morecompany.assets", Assembly.GetExecutingAssembly());
-            AssetBundle cosmeticsBundle = BundleUtilities.LoadBundleFromInternalAssembly("morecompany.cosmetics", Assembly.GetExecutingAssembly());
+            Assembly executingAssemebly = Assembly.GetExecutingAssembly();
+            AssetBundle bundle = BundleUtilities.LoadBundleFromInternalAssembly("morecompany.assets", executingAssemebly);
+            AssetBundle cosmeticsBundle = BundleUtilities.LoadBundleFromInternalAssembly("morecompany.cosmetics", executingAssemebly);
             CosmeticRegistry.LoadCosmeticsFromBundle(cosmeticsBundle);
             cosmeticsBundle.Unload(false);
             

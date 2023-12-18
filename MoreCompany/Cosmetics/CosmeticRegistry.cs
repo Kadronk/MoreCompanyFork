@@ -34,18 +34,6 @@ namespace MoreCompany.Cosmetics
                 cosmeticInstances.Add(cosmeticInstanceBehavior.cosmeticId, cosmeticInstanceBehavior);
             }
         }
-        
-        public static void LoadCosmeticsFromAssembly(Assembly assembly, AssetBundle bundle)
-        {
-            foreach (var type in assembly.GetTypes())
-            {
-                if (type.IsSubclassOf(typeof(CosmeticGeneric)))
-                {
-                    CosmeticGeneric cosmeticGeneric = (CosmeticGeneric) type.GetConstructor(new System.Type[] { }).Invoke(new object[] { });
-                    cosmeticGeneric.LoadFromBundle(bundle);
-                }
-            }
-        }
 
         public static void SpawnCosmeticGUI()
         {

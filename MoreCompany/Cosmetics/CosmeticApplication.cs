@@ -60,6 +60,8 @@ namespace MoreCompany.Cosmetics
                 cosmeticInstanceGameObject.SetActive(startEnabled);
                 CosmeticInstance cosmeticInstanceBehavior = cosmeticInstanceGameObject.GetComponent<CosmeticInstance>();
                 spawnedCosmetics.Add(cosmeticInstanceBehavior);
+                if (cosmeticInstanceBehavior.scaledToPlayerPrefab)
+                    cosmeticInstanceGameObject.transform.localScale /= 0.38f; // because of scale difference between display guy and source player prefab
                 if (startEnabled)
                 {
                     ParentCosmetic(cosmeticInstanceBehavior);
