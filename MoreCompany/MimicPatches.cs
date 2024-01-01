@@ -20,13 +20,15 @@ namespace MoreCompany
                     List<string> cosmetics = MainClass.playerIdsAndCosmetics[(int)__instance.mimickingPlayer.playerClientId];
                     Transform cosmeticRoot = __instance.transform.Find("ScavengerModel").Find("metarig");
                     CosmeticApplication cosmeticApplication = cosmeticRoot.GetComponent<CosmeticApplication>();
-                    if (cosmeticApplication)
-                    {
+                    if (cosmeticApplication) {
                         cosmeticApplication.ClearCosmetics();
-                        GameObject.Destroy(cosmeticApplication);
+                        //GameObject.Destroy(cosmeticApplication);
                     }
+                    else
+                        cosmeticApplication = cosmeticRoot.gameObject.AddComponent<CosmeticApplication>();
+                    // Don't destroy and reinstantiate the existing CosmeticApplication to avoid redoing the bone caching
+                    // I gotta test if this actually breaks stuff or not. maybe ask notswipez why he did that
                     
-                    cosmeticApplication = cosmeticRoot.gameObject.AddComponent<CosmeticApplication>();
                     foreach (var cosmetic in cosmetics)
                     {
                         cosmeticApplication.ApplyCosmetic(cosmetic, true);

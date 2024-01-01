@@ -6,6 +6,7 @@ namespace MoreCompany.Cosmetics
     public class CosmeticInstance : MonoBehaviour
     {
         public string cosmeticId;
+        public string boneName;
         public CosmeticType cosmeticType;
         public Texture2D icon;
         public bool scaledToPlayerPrefab;

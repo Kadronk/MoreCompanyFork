@@ -6,22 +6,13 @@ namespace MoreCompany.Cosmetics
 {
     public class CosmeticApplication : MonoBehaviour
     {
-        public Transform head;
-        public Transform hip;
-        public Transform lowerArmRight;
-        public Transform shinLeft;
-        public Transform shinRight;
-        public Transform chest;
         public List<CosmeticInstance> spawnedCosmetics = new List<CosmeticInstance>();
+        
+        private Dictionary<string, Transform> bones = new Dictionary<string, Transform>();
 
         public void Awake()
         {
-            head = transform.Find("spine").Find("spine.001").Find("spine.002").Find("spine.003").Find("spine.004");
-            chest = transform.Find("spine").Find("spine.001").Find("spine.002").Find("spine.003");
-            lowerArmRight = transform.Find("spine").Find("spine.001").Find("spine.002").Find("spine.003").Find("shoulder.R").Find("arm.R_upper").Find("arm.R_lower");
-            hip = transform.Find("spine");
-            shinLeft = transform.Find("spine").Find("thigh.L").Find("shin.L");
-            shinRight = transform.Find("spine").Find("thigh.R").Find("shin.R");
+            RecursiveCacheBones(transform.Find("spine"), new string[]{"spine", "shoulder", "arm", "hand", "finger", "thigh", "shin", "foot", "heel", "toe"});
 
             RefreshAllCosmeticPositions();
         }
@@ -61,7 +52,7 @@ namespace MoreCompany.Cosmetics
                 CosmeticInstance cosmeticInstanceBehavior = cosmeticInstanceGameObject.GetComponent<CosmeticInstance>();
                 spawnedCosmetics.Add(cosmeticInstanceBehavior);
                 if (cosmeticInstanceBehavior.scaledToPlayerPrefab)
-                    cosmeticInstanceGameObject.transform.localScale /= 0.38f; // because of scale difference between display guy and source player prefab
+                    cosmeticInstanceGameObject.transform.localScale /= CosmeticRegistry.COSMETIC_PLAYER_SCALE_MULT; // because of scale difference between display guy and player prefab
                 if (startEnabled)
                 {
                     ParentCosmetic(cosmeticInstanceBehavior);
@@ -80,31 +71,52 @@ namespace MoreCompany.Cosmetics
         private void ParentCosmetic(CosmeticInstance cosmeticInstance)
         {
             Transform targetTransform = null;
-            switch (cosmeticInstance.cosmeticType)
-            {
-                case CosmeticType.HAT:
-                    targetTransform = head;
-                    break;
-                case CosmeticType.R_LOWER_ARM:
-                    targetTransform = lowerArmRight;
-                    break;
-                case CosmeticType.HIP:
-                    targetTransform = hip;
-                    break;
-                case CosmeticType.L_SHIN:
-                    targetTransform = shinLeft;
-                    break;
-                case CosmeticType.R_SHIN:
-                    targetTransform = shinRight;
-                    break;
-                case CosmeticType.CHEST:
-                    targetTransform = chest;
-                    break;
+            if (string.IsNullOrEmpty(cosmeticInstance.boneName) == false)
+                targetTransform = bones[cosmeticInstance.boneName];
+            else {
+                switch (cosmeticInstance.cosmeticType)
+                {
+                    case CosmeticType.HAT:
+                        targetTransform = bones["spine.004"];
+                        break;
+                    case CosmeticType.R_LOWER_ARM:
+                        targetTransform = bones["arm.R_lower"];
+                        break;
+                    case CosmeticType.HIP:
+                        targetTransform = bones["spine"];
+                        break;
+                    case CosmeticType.L_SHIN:
+                        targetTransform = bones["shin.L"];
+                        break;
+                    case CosmeticType.R_SHIN:
+                        targetTransform = bones["shin.R"];
+                        break;
+                    case CosmeticType.CHEST:
+                        targetTransform = bones["spine.003"];
+                        break;
+                }
             }
-            
+
             cosmeticInstance.transform.position = targetTransform.position;
             cosmeticInstance.transform.rotation = targetTransform.rotation;
             cosmeticInstance.transform.parent = targetTransform;
+        }
+
+        void RecursiveCacheBones(Transform currentTf, string[] nameFilter) {
+            bool filtersPassed = false;
+            foreach (string f in nameFilter) {
+                if (currentTf.name.StartsWith(f) && currentTf.name.EndsWith("_end") == false) {
+                    filtersPassed = true;
+                    break;
+                }
+            }
+            if (filtersPassed == false)
+                return;
+
+            bones[currentTf.name] = currentTf;
+            foreach (Transform child in currentTf) {
+                RecursiveCacheBones(child, nameFilter);
+            }
         }
     }
 }
