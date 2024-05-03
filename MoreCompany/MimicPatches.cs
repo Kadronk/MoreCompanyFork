@@ -13,9 +13,9 @@ namespace MoreCompany
         [HarmonyPatch(typeof(MaskedPlayerEnemy), "SetEnemyOutside")]
         public class MaskedPlayerEnemyOnEnablePatch
         {
-            public static void Postfix(MaskedPlayerEnemy __instance)
+            public static void Postfix(ref MaskedPlayerEnemy __instance)
             {
-                if (__instance.mimickingPlayer != null && MainClass.showCosmetics)
+                if (__instance.mimickingPlayer != null && MainClass.cosmeticsSyncOther.Value && MainClass.playerIdsAndCosmetics.ContainsKey((int)__instance.mimickingPlayer.playerClientId))
                 {
                     List<string> cosmetics = MainClass.playerIdsAndCosmetics[(int)__instance.mimickingPlayer.playerClientId];
                     Transform cosmeticRoot = __instance.transform.Find("ScavengerModel").Find("metarig");
@@ -38,6 +38,9 @@ namespace MoreCompany
                     {
                         cosmetic.transform.localScale *= CosmeticRegistry.COSMETIC_PLAYER_SCALE_MULT;
                     }
+
+                    __instance.skinnedMeshRenderers = __instance.gameObject.GetComponentsInChildren<SkinnedMeshRenderer>();
+                    __instance.meshRenderers = __instance.gameObject.GetComponentsInChildren<MeshRenderer>();
                 }
             }
         }

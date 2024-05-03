@@ -1,35 +1,34 @@
 using GameNetcodeStuff;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 
 namespace MoreCompany
 {
     [HarmonyPatch(typeof(PlayerControllerB), "SpectateNextPlayer")]
     public static class SpectatePatches
     {
-        public static bool Prefix(PlayerControllerB __instance)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            int num = 0;
-            if (__instance.spectatedPlayerScript != null)
+            var newInstructions = new List<CodeInstruction>();
+            int alreadyReplaced = 0;
+            foreach (var instruction in instructions)
             {
-                num = (int)__instance.spectatedPlayerScript.playerClientId;
-            }
-            for (int i = 0; i < MainClass.newPlayerCount; i++)
-            {
-                num = (num + 1) % MainClass.newPlayerCount;
-                if (!__instance.playersManager.allPlayerScripts[num].isPlayerDead && __instance.playersManager.allPlayerScripts[num].isPlayerControlled && __instance.playersManager.allPlayerScripts[num] != __instance)
+                if (instruction.ToString() == "ldc.i4.4 NULL")
                 {
-                    __instance.spectatedPlayerScript = __instance.playersManager.allPlayerScripts[num];
-                    __instance.SetSpectatedPlayerEffects(false);
-                    return false;
+                    alreadyReplaced++;
+                    CodeInstruction codeInstruction = new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(MainClass), "newPlayerCount"));
+                    newInstructions.Add(codeInstruction);
+                    continue;
                 }
+
+                newInstructions.Add(instruction);
             }
-            if (__instance.deadBody != null && __instance.deadBody.gameObject.activeSelf)
-            {
-                __instance.spectateCameraPivot.position = __instance.deadBody.bodyParts[0].position;
-                ReflectionUtils.InvokeMethod(__instance, "RaycastSpectateCameraAroundPivot", null);
-            }
-            StartOfRound.Instance.SetPlayerSafeInShip();
-            return false;
+
+            if (alreadyReplaced != 2) MainClass.StaticLogger.LogWarning($"SpectateNextPlayer failed to replace newPlayerCount: {alreadyReplaced}/2");
+
+            return newInstructions.AsEnumerable();
         }
     }
 }
